@@ -3,9 +3,9 @@ import os
 import sys
 from backends.torch_backend import analyze_torch, get_device
 
-def run_verification(npz_path="../ground_truth_test.npz"):
+def execute_verification(npz_path="../ground_truth_test.npz"):
     if not os.path.exists(npz_path):
-        print(f"Greska: Fajl '{npz_path}' ne postoji. Prvo pokreni main.py sa numpy backendom!")
+        print(f"Error: File '{npz_path}' does not exist. First execute main.py with numpy backend!")
         sys.exit(1)
 
     print(f"Loading file: {npz_path}...")
@@ -59,4 +59,4 @@ def run_verification(npz_path="../ground_truth_test.npz"):
         print("\nThere are misalignment between backend. There are misalignment between backend. Check the tolerance or STFT parameters.")
 
 if __name__ == "__main__":
-    run_verification()
+    execute_verification()
