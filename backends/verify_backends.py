@@ -24,13 +24,11 @@ def run_verification(npz_path="../ground_truth_test.npz"):
     print(f"Executing PyTorch analysis on the device: {device}...")
     torch_res = analyze_torch(batch_pcm, lengths, cfg, device=device)
 
-    # Definisanje metrika za proveru i dozvoljenih numerickih tolerancija
-    # atol (apsolutna tolerancija) i rtol (relativna tolerancija)
     checks = [
         ("RMS", "rms", 1e-5, 1e-6),
         ("True Peak", "true_peak", 1e-5, 1e-6),
         ("DC Offset", "dc_offset", 1e-5, 1e-6),
-        ("Clipped Samples", "clipped_samples", 0, 0),  # celi brojevi moraju biti 100% identicni
+        ("Clipped Samples", "clipped_samples", 0, 0),
         ("Stereo Correlation", "stereo_correlation", 1e-4, 1e-5),
         ("HF Energy Ratio", "hf_energy_ratio", 1e-4, 1e-5),
         ("LTAS Matrix", "ltas", 1e-4, 1e-4),

@@ -31,7 +31,6 @@ if __name__ == "__main__":
     print(f"\nLTAS matrix shape: {res['ltas'].shape}")
     print(f"Percentile 90 shape: {res['percentile_90'].shape}")
 
-    # Snimanje referentnih vrednosti za verifikaciju PyTorch / CUDA koda
     output_npz = "ground_truth_test.npz"
     np.savez_compressed(
         output_npz,
