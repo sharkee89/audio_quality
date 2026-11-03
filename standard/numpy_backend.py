@@ -1,7 +1,6 @@
 import numpy as np
 import os
 import scipy.signal
-import scipy.signal
 import soundfile as sf
 
 
