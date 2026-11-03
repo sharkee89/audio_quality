@@ -1,12 +1,24 @@
-from pathlib import Path
-from audio.audio_utils import load_audio_for_gpu, log_audio_init_data
+from standard.numpy_backend import analyze, load_audio_batch
 
-if __name__ == '__main__':
-    print("audio_quality")
-    BASE_DIR = Path(__file__).resolve().parent
-    audio_file = BASE_DIR / "audio_samples" / "tehno.mp3"
-    if not audio_file.exists():
-        print(f"Error: file does not exists on path: {audio_file}")
-    else:
-        audio_data, sr = load_audio_for_gpu(str(audio_file))
-        log_audio_init_data(audio_data, sr)
+if __name__ == "__main__":
+    folder_data = "./audio_samples"
+
+    test_files = ["tehno.mp3"]
+
+    cfg = {
+        "n_fft": 4096,
+        "hop_length": 2048,
+        "sample_rate": 44100
+    }
+
+    print("Loading files...")
+    batch_pcm, lengths = load_audio_batch(folder_data, test_files)
+
+    print(f"Successfully loaded batch with shape: {batch_pcm.shape}")
+    print("Initiating audio analysis...")
+
+    res = analyze(batch_pcm, lengths, cfg)
+
+    print("\nFinished! results data:")
+    print(f"LTAS matrix shape: {res['ltas'].shape}")
+    print(f"RMS song values: {res['rms']}")
