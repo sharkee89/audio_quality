@@ -3,13 +3,14 @@
 
 __global__ void double_array_kernel(float* d_arr, int n) {
     int idx = blockIdx.x * blockDim.x + threadIdx.x;
-    if (idx < n) {
-        d_arr[idx] = d_arr[idx] * 2.0f;
+    int stride = gridDim.x * blockDim.x;
+    for (int i = idx; i < n; i += stride) {
+        d_arr[i] = d_arr[i] * 2.0f;
     }
 }
 
 int main() {
-    const int N = 1024;
+    const int N = 10000;
     size_t bytes = N * sizeof(float);
 
     std::cout << "[STEP 1] Creating CPU array a[i] = i..." << std::endl;
