@@ -1,0 +1,6 @@
+numpy
+scipy
+soundfile
+# Install torch with a CUDA build from https://pytorch.org/get-started/locally/
+# The default wheel on Windows is CPU-only.
+torch

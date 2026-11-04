@@ -49,7 +49,7 @@ def analyze(batch_pcm: np.ndarray, lengths: list[int], cfg: dict):
     percentile_90 = np.zeros((batch_size, 2, n_freqs), dtype=np.float32)
     dc_offset = np.zeros((batch_size, 2), dtype=np.float32)
     rms = np.zeros((batch_size, 2), dtype=np.float32)
-    true_peak = np.zeros((batch_size, 2), dtype=np.float32)
+    sample_peak = np.zeros((batch_size, 2), dtype=np.float32)
     clipped_samples = np.zeros((batch_size, 2), dtype=np.int64)
     stereo_correlation = np.zeros((batch_size,), dtype=np.float32)
 
@@ -65,9 +65,10 @@ def analyze(batch_pcm: np.ndarray, lengths: list[int], cfg: dict):
 
         dc_offset[i] = np.mean(valid_pcm, axis=-1)
         rms[i] = np.sqrt(np.mean(valid_pcm ** 2, axis=-1))
-        true_peak[i] = np.max(np.abs(valid_pcm), axis=-1)
+        sample_peak[i] = np.max(np.abs(valid_pcm), axis=-1)
 
-        clipped_samples[i] = np.sum(np.abs(valid_pcm) >= 0.9999, axis=-1)
+        valid_lr = np.stack((valid_L, valid_R), axis=0)
+        clipped_samples[i] = np.sum(np.abs(valid_lr) >= 0.9999, axis=-1)
 
         nom = np.sum(valid_L * valid_R)
         denom = np.sqrt(np.sum(valid_L ** 2) * np.sum(valid_R ** 2)) + 1e-10
@@ -93,7 +94,7 @@ def analyze(batch_pcm: np.ndarray, lengths: list[int], cfg: dict):
         "percentile_90": percentile_90,
         "dc_offset": dc_offset,
         "rms": rms,
-        "true_peak": true_peak,
+        "sample_peak": sample_peak,
         "clipped_samples": clipped_samples,
         "stereo_correlation": stereo_correlation,
         "hf_energy_ratio": hf_energy_ratio,
@@ -102,10 +103,11 @@ def analyze(batch_pcm: np.ndarray, lengths: list[int], cfg: dict):
     }
 
 
-def load_audio_batch(folder_path: str, filenames: list[str]) -> tuple[np.ndarray, list[int]]:
+def load_audio_batch(folder_path: str, filenames: list[str], sample_rate: int = 44100) -> tuple[np.ndarray, list[int]]:
     """
-    Loading FLAC/WAV files, assuring stereo format and setting zeros
-    so all files in batch would be the same length
+    Loading audio files supported by soundfile (FLAC/WAV/MP3), assuring stereo format
+    and setting zeros so all files in batch would be the same length.
+    Raises ValueError if a file's sample rate differs from sample_rate
     """
     audios = []
     lengths = []
@@ -113,6 +115,9 @@ def load_audio_batch(folder_path: str, filenames: list[str]) -> tuple[np.ndarray
     for fname in filenames:
         path = os.path.join(folder_path, fname)
         data, samplerate = sf.read(path, dtype='int16')
+
+        if samplerate != sample_rate:
+            raise ValueError(f"{fname}: expected {sample_rate} Hz, got {samplerate} Hz")
 
         if data.ndim == 1:
             data = np.stack((data, data), axis=1)

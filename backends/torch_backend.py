@@ -60,7 +60,7 @@ def analyze_torch(batch_pcm: np.ndarray, lengths: list[int], cfg: dict, device=N
     percentile_90 = torch.zeros((batch_size, 2, n_freqs), dtype=torch.float32, device=device)
     dc_offset = torch.zeros((batch_size, 2), dtype=torch.float32, device=device)
     rms = torch.zeros((batch_size, 2), dtype=torch.float32, device=device)
-    true_peak = torch.zeros((batch_size, 2), dtype=torch.float32, device=device)
+    sample_peak = torch.zeros((batch_size, 2), dtype=torch.float32, device=device)
     clipped_samples = torch.zeros((batch_size, 2), dtype=torch.int64, device=device)
     stereo_correlation = torch.zeros((batch_size,), dtype=torch.float32, device=device)
 
@@ -76,9 +76,10 @@ def analyze_torch(batch_pcm: np.ndarray, lengths: list[int], cfg: dict, device=N
 
         dc_offset[i] = torch.mean(valid_pcm, dim=-1)
         rms[i] = torch.sqrt(torch.mean(valid_pcm ** 2, dim=-1))
-        true_peak[i] = torch.max(torch.abs(valid_pcm), dim=-1).values
+        sample_peak[i] = torch.max(torch.abs(valid_pcm), dim=-1).values
 
-        clipped_samples[i] = torch.sum((torch.abs(valid_pcm) >= 0.9999).to(torch.int64), dim=-1)
+        valid_lr = torch.stack((valid_L, valid_R), dim=0)
+        clipped_samples[i] = torch.sum((torch.abs(valid_lr) >= 0.9999).to(torch.int64), dim=-1)
 
         nom = torch.sum(valid_L * valid_R)
         denom = torch.sqrt(torch.sum(valid_L ** 2) * torch.sum(valid_R ** 2)) + 1e-10
@@ -105,7 +106,7 @@ def analyze_torch(batch_pcm: np.ndarray, lengths: list[int], cfg: dict, device=N
         "percentile_90": percentile_90.cpu().numpy(),
         "dc_offset": dc_offset.cpu().numpy(),
         "rms": rms.cpu().numpy(),
-        "true_peak": true_peak.cpu().numpy(),
+        "sample_peak": sample_peak.cpu().numpy(),
         "clipped_samples": clipped_samples.cpu().numpy(),
         "stereo_correlation": stereo_correlation.cpu().numpy(),
         "hf_energy_ratio": hf_energy_ratio.cpu().numpy()

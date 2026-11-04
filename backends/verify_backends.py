@@ -1,9 +1,13 @@
 import numpy as np
 import os
 import sys
+
+ROOT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+sys.path.insert(0, ROOT_DIR)
+
 from backends.torch_backend import analyze_torch, get_device
 
-def execute_verification(npz_path="../ground_truth_test.npz"):
+def execute_verification(npz_path=os.path.join(ROOT_DIR, "ground_truth_test.npz")):
     if not os.path.exists(npz_path):
         print(f"Error: File '{npz_path}' does not exist. First execute main.py with numpy backend!")
         sys.exit(1)
@@ -26,7 +30,7 @@ def execute_verification(npz_path="../ground_truth_test.npz"):
 
     checks = [
         ("RMS", "rms", 1e-5, 1e-6),
-        ("True Peak", "true_peak", 1e-5, 1e-6),
+        ("Sample Peak", "sample_peak", 1e-5, 1e-6),
         ("DC Offset", "dc_offset", 1e-5, 1e-6),
         ("Clipped Samples", "clipped_samples", 0, 0),
         ("Stereo Correlation", "stereo_correlation", 1e-4, 1e-5),
